@@ -1,0 +1,56 @@
+---
+title: "Mapping Data with Tidycensus"
+format: html
+editor: visual
+---
+
+```{r}
+
+
+library(tidyverse)
+install.packages("tidycensus")
+library(tidycensus)
+
+census_api_key("1ac759ea17827990b6b83d2ea74559a25f20a38f", overwrite = TRUE)
+
+
+
+
+
+
+
+```
+
+```         
+```
+
+```{}
+```
+
+```         
+
+```
+
+```{r}
+
+
+```
+
+```{r}
+usethis::edit_r_environ()
+
+CENSUS_API_KEY='1ac759ea17827990b6b83d2ea74559a25f20a38f'
+
+```
+
+```{r}
+age20 <- get_decennial(geography = "state", 
+                       variables = "P13_001N", 
+                       year = 2020,
+                       sumfile = "dhc")
+
+head(age20)
+```
+
+```{}
+```
