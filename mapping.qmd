@@ -362,8 +362,6 @@ girafe(
 )
 ```
 
-
-
 ```{r}
 
 ### Challenge 1B (Mapview)  ####
@@ -417,6 +415,7 @@ mapview(
 
 summary(OC$estimate)
 ```
+
 ```{r}
 ### Challenge 1 C - Final Scatter ###
 
@@ -442,6 +441,7 @@ ggplot(data = OC_scatter, aes(x = median_ageE, y = median_incomeE)) +
     y = "Median Household Income (USD)"
   )
 ```
+
 ```{r}
 ###Challenge 2- Bivariate Map ###
 library(mapgl)
@@ -510,4 +510,3 @@ maplibre(
 
 
 ```
-
