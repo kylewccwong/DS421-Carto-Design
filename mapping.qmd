@@ -17,6 +17,8 @@ options(scipen = 999)
 
 ```
 
+#test
+
 ### Welcome!
 
 This notebook is all about using the most popular/modern packages to map data in R. They all follow the same style but have their unique functions and strengthes/weaknesses. With these options you should able to design almost any map you can think of. There are many more packages not included here but this is a great start. Here's the documentation for each:
@@ -302,7 +304,7 @@ options(scipen = 999)
 
 #Step 1: Load in our data
 
-OC_age <- get_acs(
+OC <- get_acs(
   state = "CA",
   county = "Orange",
   geography = "tract",
@@ -490,7 +492,6 @@ maplibre(
     fill_color = age_income_scale$expression,
     fill_opacity = 0.75,
     fill_outline_color = "rgba(255,255,255,0.25)",
-    popup = "popup",
     hover_options = list(fill_opacity = 1)
   ) |>
   add_bivariate_legend(
