@@ -1,0 +1,53 @@
+---
+##Shiny App Challenge
+---
+
+
+```{r}
+library(shiny)
+library(mapview)
+library(here)
+library(sf)
+library(tidyverse)
+library(leaflet)
+```
+
+
+
+```{r}
+county_data <- st_read(here("data/county_data.gpkg"))
+```
+
+
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Languages Spoken by County"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput(
+        "var",
+        "Choose a language",
+        choices = unique(county_data$language)
+      )
+    ),
+    mainPanel(
+      leafletOutput("map", height = "700px")
+    )
+  )
+)
+
+server <- function(input, output, session) {
+  output$map <- renderLeaflet({
+    filtered_data <- county_data[county_data$language == input$var, ]
+    
+    mapview(
+      filtered_data,
+      zcol = "percent_speakers",
+      layer.name = "Percent Speakers"
+    )@map
+  })
+}
+
+shinyApp(ui, server)
+```
