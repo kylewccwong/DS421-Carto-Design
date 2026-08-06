@@ -1,8 +1,3 @@
-# DS421-Carto-Design
-Projects for Cartographic Design (DS421)
+# DS421-Carto-Design FINAL PROJECT- "Analyzing Social Vulnerability Indicators for Potential Coastal Hazard in Hawai'i"
 
-install.packages("mapgl")
-
-usethis::edit_r_environ()
-
-
+Using data from the Hawaii Geospatial data portal, I explored the locational relationship between social vulnerability indicators and projected coastal hazard data across all Hawaiian islands. I used two datasets to accomplish this: "The 2020 Social Vulnerability Indicator Count for Coastal Hazards at or above the 75th percentile by Census Block Groups" and "SLR Exposure Area - 3.2 Ft. Scenario." The social vulnerability dataset separated the Hawaiian Islands into 1056 unique block groups and used a binary (0 or 1) scoring system to measure 15 variables relating to the social vulnerability of an area block. The final score, or count for each area block was found by tallying the total score across these 15 variables. I made a choropleth map to separate the islands into area blocks and compared it with the vulnerability scores. For the second part of my map, I added another dataset to add another layer of locational data. It is projected that by 2100, we could see a 3.2 ft level of sea level rise. Indicating which areas have greater social vulnerability counts and are in future coastal danger zones could be very useful in disaster planning. We learned from the Lahaina fires and even recent Wailua floods that unthinkable damage can be done quickly. Understanding which communities are in the projected coastal disaster zones, which communities need more effective transportation evacuation plans, and which communities need new infrastructure to combat potential flooding can prevent another Waialua flooding situation. Identifying these zones in the map can give planners a better starting point for where to allocate resources. 
