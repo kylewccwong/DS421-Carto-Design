@@ -1,0 +1,187 @@
+---
+title: "Analyzing Social Vulnerability Indicators for Potential Coastal Hazard in Hawai'i"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+Load in Libraries
+
+```{r}
+library("tidyverse")
+library("here")
+library("sf")
+library("mapview")
+library("mapgl")
+library("ggiraph")
+library("leaflet")
+library("shiny")
+```
+
+Read in Data
+
+```{r}
+block_indicators <- st_read("data/2020_Social_Vulnerability_Indicators_for_Coastal_Hazards__by_Block_Group.geojson")
+
+coastal_hazards <- st_read("data/SLR_Exposure_Area_-_3.2_Ft._Scenario.geojson")
+```
+
+Education: Percent Population over the age of 25 with no high-school diploma in the bg
+Vehicles: Percent Households with no access to a vehicle in the bg
+Disability: Percent Population with a disability in the bg
+Over_65: Percent Population over the age of 65 in the bg
+Under_5: Percent Population under the age of 5 in the bg
+Single_Par: Percent Single Parent Households w/ children under the age of 18 in the bg
+Household: Percent Households with no internet access or limited internet access and/or
+no computer in the bg
+Limited_En: Percent Households that speak "limited English” in the bg
+Built_befo: Percent Households built before 1970 in the bg
+Housing_Te: Percent Households that are renter-occupied in the bg
+Industry_A: Percent Population over the age of 16 employed in nature based or service
+industries in the bg
+Househol_1: Percent Population of female householders in the bg
+Hispanic_L: Percent Population that identifies as Hispanic or Latino in the bg
+Race: Percent Population that is Native Hawaiian or Pacific Islander in the bg
+Poverty: Percent Population for whom poverty status is determined in the bg
+Income_Def: the Aggregate income deficit (dollars) in the past 12 months for families within
+the given block group
+Count: Total Number of Social Vulnerability Indicators that are true for this block
+group
+
+## Changing data types in DF as int or dbls(floating numbers)
+
+```{r}
+block_indicators <- block_indicators %>%
+  mutate(across(c(education, vehicles, disability, overr_65, under_5,
+                   single_par, household, limited_en, built_befo,
+                   housing_te, industry_a, househol_1, hispanic_l,
+                   race, poverty), as.numeric))
+
+```
+
+Chlorpleth Map
+
+```{r}
+
+pal <- colorNumeric(palette = "YlOrRd", domain = block_indicators$count_, na.color = "transparent")
+
+leaflet(block_indicators) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addPolygons(
+    fillColor = ~pal(count_),
+    fillOpacity = 0.7,
+    color = "white",
+    weight = 0.5,
+    label = ~paste0("Vulnerability Count: ", count_),
+    highlightOptions = highlightOptions(weight = 2, color = "black", bringToFront = TRUE)
+  ) %>%
+  addLegend(pal = pal, values = ~count_, title = "Vulnerability Count", position = "bottomright")
+```
+
+Lets see what our 2nd dataset looks like on a map
+
+```{r}
+mapview(coastal_hazards)
+
+```
+
+Changes to our data frame
+
+-   re-adjust data types in dataframe to int or dbl
+
+-   remove irrelevant vulnerabilities to coastal disaster
+
+-   re-calculate our count totals
+
+```{r}
+block_indicators <- block_indicators %>%
+  mutate(across(c(education, vehicles, disability, overr_65, under_5,
+                   single_par, household, limited_en, built_befo,
+                   housing_te, industry_a, househol_1, hispanic_l,
+                   race, poverty), as.numeric))
+
+block_less <- block_indicators %>%
+  select(-objectid, -bg, -industry_a, -hispanic_l, -race, -st_perimetershape, -st_areashape)
+
+block_less <- block_less %>%
+  mutate(count_ = rowSums(!is.na(across(c(education, vehicles, disability, overr_65,
+                                            under_5, single_par, household, limited_en,
+                                            built_befo, housing_te, househol_1, poverty))))
+                 + (income_def != 0))
+```
+
+Updated map with 2 layers: vulnerability variables by area block group and projected coastal disaster locations
+
+```{r}
+pal <- colorNumeric(palette = "YlOrRd", domain = block_less$count_, na.color = "transparent")
+
+leaflet(block_less) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  addPolygons(
+    fillColor = ~pal(count_),
+    fillOpacity = 0.7,
+    color = "white",
+    weight = 0.5,
+    label = ~paste0("Vulnerability Count: ", count_, " | Population: ", pop20),
+    highlightOptions = highlightOptions(weight = 2, color = "black", bringToFront = FALSE),
+    group = "Vulnerability",
+  ) %>%
+  addPolygons(
+    data = coastal_hazards,
+    fillColor = "blue",
+    fillOpacity = 0.4,
+    color = "blue",
+    weight = 1,
+    group = "Coastal Hazard Projection Zones (3.2 ft)"
+  ) %>%
+  addLegend(pal = pal, values = ~count_, title = "Vulnerability Count", position = "bottomright") %>%
+  addLayersControl(
+    overlayGroups = c("Vulnerability", "Coastal Hazard Projection Zones (3.2 ft"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
+
+Shiny APP (I couldn't upload deploy the app, I kept getting the same error) - made a HTML instead and put it on git
+
+```{r}
+ui <- fluidPage(
+  titlePanel("Analyzing Social Vulnerability Indicators for Potential Coastal Hazard in Hawai'i"),
+  mainPanel(
+    leafletOutput("map", height = "700px")
+  )
+)
+
+server <- function(input, output, session) {
+  output$map <- renderLeaflet({
+    pal <- colorNumeric(palette = "YlOrRd", domain = block_less$count_, na.color = "transparent")
+
+    leaflet(block_less) %>%
+      addProviderTiles("CartoDB.Positron") %>%
+      addPolygons(
+        fillColor = ~pal(count_),
+        fillOpacity = 0.7,
+        color = "white",
+        weight = 0.5,
+        label = ~paste0("Vulnerability Count: ", count_, " | Population: ", pop20),
+        highlightOptions = highlightOptions(weight = 2, color = "black", bringToFront = FALSE),
+        group = "Vulnerability"
+      ) %>%
+      addPolygons(
+        data = coastal_hazards,
+        fillColor = "blue",
+        fillOpacity = 0.4,
+        color = "blue",
+        weight = 1,
+        group = "Coastal Hazard Projection Zones (3.2 ft)"
+      ) %>%
+      addLegend(pal = pal, values = ~count_, title = "Vulnerability Count", position = "bottomright") %>%
+      addLayersControl(
+        overlayGroups = c("Vulnerability", "Coastal Hazard Projection Zones (3.2 ft)"),
+        options = layersControlOptions(collapsed = FALSE)
+      )
+  })
+}
+
+shinyApp(ui, server)
+```
